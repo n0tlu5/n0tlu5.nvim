@@ -904,7 +904,7 @@ require('lazy').setup({
       workspaces = {
         {
           name = 'n0tlu5',
-          path = '~/Documents/obsi_n0tlu5',
+          path = '~/Documents/obsi-n0tlu5',
         },
       },
       notes_subdir = 'notes',
