@@ -193,6 +193,22 @@ vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right win
 vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
 
+local opts = { noremap = true, silent = false }
+
+-- Create a new note after asking for its title.
+vim.api.nvim_set_keymap('n', '<leader>zn', "<Cmd>ZkNew { title = vim.fn.input('Title: ') }<CR>", opts)
+
+-- Open notes.
+vim.api.nvim_set_keymap('n', '<leader>zo', "<Cmd>ZkNotes { sort = { 'modified' } }<CR>", opts)
+-- Open notes associated with the selected tags.
+vim.api.nvim_set_keymap('n', '<leader>zt', '<Cmd>ZkTags<CR>', opts)
+
+-- Search for the notes matching a given query.
+vim.api.nvim_set_keymap('n', '<leader>zf', "<Cmd>ZkNotes { sort = { 'modified' }, match = { vim.fn.input('Search: ') } }<CR>", opts)
+-- Search for the notes matching the current visual selection.
+vim.api.nvim_set_keymap('v', '<leader>zf', ":'<,'>ZkMatch<CR>", opts)
+vim.api.nvim_set_keymap('n', '<leader>zi', '<Cmd>ZkIndex<CR>', opts)
+
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
 
@@ -827,28 +843,26 @@ require('lazy').setup({
     end,
   },
   {
-    'ellisonleao/gruvbox.nvim',
+    'catppuccin/nvim',
+    name = 'catppuccin',
     priority = 1000,
-    config = true,
-  },
-  { -- You can easily change to a different colorscheme.
-    -- Change the name of the colorscheme plugin below, and then
-    -- change the command in the config to whatever the name of that colorscheme is.
-    --
-    -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
-    'folke/tokyonight.nvim',
-    priority = 1000, -- Make sure to load this before all the other start plugins.
+    opts = {
+      transparent = true,
+      styles = {
+        sidebars = 'transparent',
+        floats = 'transparent',
+      },
+    },
     init = function()
       -- Load the colorscheme here.
       -- Like many other themes, this one has different styles, and you could load
       -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-      vim.cmd.colorscheme 'gruvbox'
+      vim.cmd.colorscheme 'catppuccin-mocha'
 
       -- You can configure highlights by doing something like:
       vim.cmd.hi 'Comment gui=none'
     end,
   },
-
   -- Highlight todo, notes, etc in comments
   { 'folke/todo-comments.nvim', event = 'VimEnter', dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = false } },
 
@@ -890,148 +904,6 @@ require('lazy').setup({
     end,
   },
   {
-    'epwalsh/obsidian.nvim',
-    version = '*', -- recommended, use latest release instead of latest commit
-    lazy = true,
-    ft = 'markdown',
-    -- Replace the above line with this if you only want to load obsidian.nvim for markdown files in your vault:
-    -- event = {
-    --   -- If you want to use the home shortcut '~' here you need to call 'vim.fn.expand'.
-    --   -- E.g. "BufReadPre " .. vim.fn.expand "~" .. "/my-vault/**.md"
-    --   "BufReadPre path/to/my-vault/**.md",
-    --   "BufNewFile path/to/my-vault/**.md",
-    -- },
-    dependencies = {
-      -- Required.
-      'nvim-lua/plenary.nvim',
-
-      -- see below for full list of optional dependencies 👇
-    },
-    opts = {
-      workspaces = {
-        {
-          name = 'n0tlu5',
-          path = '~/Documents/obsi-n0tlu5',
-        },
-      },
-      notes_subdir = 'notes',
-      daily_notes = {
-        folder = 'notes/dailies',
-        -- Optional, if you want to change the date format for the ID of daily notes.
-        date_format = '%Y-%m-%d',
-        -- Optional, if you want to change the date format of the default alias of daily notes.
-        alias_format = '%B %-d, %Y',
-        -- Optional, default tags to add to each new daily note created.
-        default_tags = { 'daily-notes' },
-        -- Optional, if you want to automatically insert a template from your template directory like 'daily.md'
-        template = 'daily.md',
-      },
-      templates = {
-        folder = 'templates',
-        date_format = '%Y-%m-%d-%a',
-        time_format = '%H:%M',
-      },
-      mappings = {
-        -- Overrides the 'gf' mapping to work on markdown/wiki links within your vault.
-        ['gf'] = {
-          action = function()
-            return require('obsidian').util.gf_passthrough()
-          end,
-          opts = { noremap = false, expr = true, buffer = true },
-        },
-        -- Toggle check-boxes.
-        ['<leader>ch'] = {
-          action = function()
-            return require('obsidian').util.toggle_checkbox()
-          end,
-          opts = { buffer = true },
-        },
-        -- Smart action depending on context, either follow link or toggle checkbox.
-        ['<cr>'] = {
-          action = function()
-            return require('obsidian').util.smart_action()
-          end,
-          opts = { buffer = true, expr = true },
-        },
-      },
-      completion = {
-        -- Set to false to disable completion.
-        nvim_cmp = true,
-        -- Trigger completion at 2 chars.
-        min_chars = 2,
-      },
-      new_notes_location = 'notes_subdir',
-      -- Optional, customize how note IDs are generated given an optional title.
-      ---@param title string|?
-      ---@return string
-      note_id_func = function(title)
-        -- Create note IDs in a Zettelkasten format with a timestamp and a suffix.
-        -- In this case a note with the title 'My new note' will be given an ID that looks
-        -- like '1657296016-my-new-note', and therefore the file name '1657296016-my-new-note.md'
-        local suffix = ''
-        if title ~= nil then
-          -- If title is given, transform it into valid file name.
-          suffix = title:gsub(' ', '-'):gsub('[^A-Za-z0-9-]', ''):lower()
-        else
-          -- If title is nil, just add 4 random uppercase letters to the suffix.
-          for _ = 1, 4 do
-            suffix = suffix .. string.char(math.random(65, 90))
-          end
-        end
-        return tostring(os.time()) .. '-' .. suffix
-      end,
-
-      -- Optional, customize how note file names are generated given the ID, target directory, and title.
-      ---@param spec { id: string, dir: obsidian.Path, title: string|? }
-      ---@return string|obsidian.Path The full path to the new note.
-      note_path_func = function(spec)
-        -- This is equivalent to the default behavior.
-        local path = spec.dir / tostring(spec.id)
-        return path:with_suffix '.md'
-      end,
-
-      -- Optional, customize how wiki links are formatted. You can set this to one of:
-      --  * "use_alias_only", e.g. '[[Foo Bar]]'
-      --  * "prepend_note_id", e.g. '[[foo-bar|Foo Bar]]'
-      --  * "prepend_note_path", e.g. '[[foo-bar.md|Foo Bar]]'
-      --  * "use_path_only", e.g. '[[foo-bar.md]]'
-      -- Or you can set it to a function that takes a table of options and returns a string, like this:
-      wiki_link_func = function(opts)
-        return require('obsidian.util').wiki_link_id_prefix(opts)
-      end,
-
-      -- Optional, customize how markdown links are formatted.
-      markdown_link_func = function(opts)
-        return require('obsidian.util').markdown_link(opts)
-      end,
-
-      -- Either 'wiki' or 'markdown'.
-      preferred_link_style = 'wiki',
-
-      -- Optional, customize the default name or prefix when pasting images via `:ObsidianPasteImg`.
-      ---@return string
-      image_name_func = function()
-        -- Prefix image names with timestamp.
-        return string.format('%s-', os.time())
-      end,
-
-      -- Optional, boolean or a function that takes a filename and returns a boolean.
-      -- `true` indicates that you don't want obsidian.nvim to manage frontmatter.
-      disable_frontmatter = false,
-
-      -- Optional, by default when you use `:ObsidianFollowLink` on a link to an external
-      -- URL it will be ignored but you can customize this behavior here.
-      ---@param url string
-      follow_url_func = function(url)
-        -- Open the URL in the default web browser.
-        -- vim.fn.jobstart({"open", url})  -- Mac OS
-        vim.fn.jobstart { 'xdg-open', url } -- linux
-      end,
-
-      -- see below for full list of options 👇
-    },
-  },
-  {
     'toppair/peek.nvim',
     event = { 'VeryLazy' },
     build = 'deno task --quiet build:fast',
@@ -1066,7 +938,14 @@ require('lazy').setup({
     --    - Show your current context: https://github.com/nvim-treesitter/nvim-treesitter-context
     --    - Treesitter + textobjects: https://github.com/nvim-treesitter/nvim-treesitter-textobjects
   },
-
+  {
+    'zk-org/zk-nvim',
+    config = function()
+      require('zk').setup {
+        -- See Setup section below
+      }
+    end,
+  },
   -- The following two comments only work if you have downloaded the kickstart repo, not just copy pasted the
   -- init.lua. If you want these files, they are in the repository, so you can just download them and
   -- place them in the correct locations.
