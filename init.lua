@@ -1025,6 +1025,36 @@ require('lazy').setup({
       vim.api.nvim_buf_set_keymap(0, 't', '<C-l>', [[<C-\><C-n><C-W>l]], opts)
     end,
   },
+  {
+    'olimorris/codecompanion.nvim',
+    dependencies = {
+      'nvim-lua/plenary.nvim',
+      'nvim-treesitter/nvim-treesitter',
+    },
+    opts = {
+      adapters = {
+        gemini = function()
+          return require('codecompanion.adapters').extend('gemini', {
+            env = {
+              api_key = 'REDACTED',
+            },
+          })
+        end,
+      },
+      strategies = {
+        -- Change the default chat adapter
+        chat = {
+          adapter = 'gemini',
+        },
+        inline = {
+          adapter = 'gemini',
+        },
+        cmd = {
+          adapter = 'gemini',
+        },
+      },
+    },
+  },
   -- The following two comments only work if you have downloaded the kickstart repo, not just copy pasted the
   -- init.lua. If you want these files, they are in the repository, so you can just download them and
   -- place them in the correct locations.
