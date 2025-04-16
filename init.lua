@@ -964,6 +964,20 @@ require('lazy').setup({
       vim.api.nvim_set_keymap('n', '<c-space>', '<cmd>TWToggle<cr>', { silent = true })
     end,
   },
+  {
+    'lewis6991/gitsigns.nvim',
+    opts = {
+      -- Enable keymaps for staging selected lines
+      on_attach = function(bufnr)
+        local gs = package.loaded.gitsigns
+
+        -- Keymap for staging selected lines
+        vim.keymap.set('v', '<leader>gs', function()
+          gs.stage_hunk { vim.fn.line 'v', vim.fn.line '.' }
+        end, { buffer = bufnr, desc = 'Git Stage Selected Lines' })
+      end,
+    },
+  },
   -- The following two comments only work if you have downloaded the kickstart repo, not just copy pasted the
   -- init.lua. If you want these files, they are in the repository, so you can just download them and
   -- place them in the correct locations.
