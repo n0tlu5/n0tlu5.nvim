@@ -274,6 +274,21 @@ require('lazy').setup({
         topdelete = { text = '‾' },
         changedelete = { text = '~' },
       },
+      on_attach = function(bufnr)
+        local gs = package.loaded.gitsigns
+
+        vim.keymap.set('n', '<leader>gh', gs.stage_hunk, { buffer = bufnr, desc = 'Git Stage Hunk' })
+        vim.keymap.set('v', '<leader>gs', function()
+          gs.stage_hunk { vim.fn.line 'v', vim.fn.line '.' }
+        end, { buffer = bufnr, desc = 'Git Stage Selected Lines' })
+
+        vim.keymap.set('n', '<leader>gp', gs.preview_hunk, { buffer = bufnr, desc = 'Git Preview Hunk' })
+        vim.keymap.set('n', '<leader>gb', gs.blame_line, { buffer = bufnr, desc = 'Git Blame Line' })
+        vim.keymap.set('n', '<leader>gt', gs.toggle_signs, { buffer = bufnr, desc = 'Git Toggle Signs' })
+        vim.keymap.set('n', ']h', gs.next_hunk, { buffer = bufnr, desc = 'Git Next Hunk' })
+        vim.keymap.set('n', '[h', gs.prev_hunk, { buffer = bufnr, desc = 'Git Previous Hunk' })
+        vim.keymap.set('n', '<leader>gu', gs.undo_stage_hunk, { buffer = bufnr, desc = 'Git Undo Stage Hunk' })
+      end,
     },
   },
 
@@ -845,8 +860,8 @@ require('lazy').setup({
     end,
   },
   {
-    'catppuccin/nvim',
-    name = 'catppuccin',
+    'folke/tokyonight.nvim',
+    name = 'tokyonight',
     priority = 1000,
     opts = {
       transparent = true,
@@ -859,7 +874,7 @@ require('lazy').setup({
       -- Load the colorscheme here.
       -- Like many other themes, this one has different styles, and you could load
       -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-      vim.cmd.colorscheme 'catppuccin-mocha'
+      vim.cmd.colorscheme 'tokyonight-moon'
 
       -- You can configure highlights by doing something like:
       vim.cmd.hi 'Comment gui=none'
@@ -965,20 +980,6 @@ require('lazy').setup({
     end,
   },
   {
-    'lewis6991/gitsigns.nvim',
-    opts = {
-      -- Enable keymaps for staging selected lines
-      on_attach = function(bufnr)
-        local gs = package.loaded.gitsigns
-
-        -- Keymap for staging selected lines
-        vim.keymap.set('v', '<leader>gs', function()
-          gs.stage_hunk { vim.fn.line 'v', vim.fn.line '.' }
-        end, { buffer = bufnr, desc = 'Git Stage Selected Lines' })
-      end,
-    },
-  },
-  {
     'akinsho/nvim-toggleterm.lua',
     config = function()
       require('toggleterm').setup {
@@ -998,7 +999,7 @@ require('lazy').setup({
         start_in_insert = true,
         insert_mappings = true, -- whether or not the open mapping applies in insert mode
         persist_size = true,
-        direction = 'vertical',
+        direction = 'float',
         close_on_exit = true, -- close the terminal window when the process exits
         shell = vim.o.shell, -- change the default shell
         -- This field is only relevant if direction is set to 'float'
@@ -1007,7 +1008,7 @@ require('lazy').setup({
           -- see :h nvim_win_open for details on borders however
           -- the 'curved' border is a custom border type
           -- not natively supported but implemented in this plugin.
-          -- border = 'single' | 'double' | 'shadow' | 'curved' | ... other options supported by win open
+          border = 'double',
           -- width = <value>,
           -- height = <value>,
           -- winblend = 3,
