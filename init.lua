@@ -1018,6 +1018,8 @@ require('lazy').setup({
           },
         },
       }
+      vim.api.nvim_set_keymap('n', 'ppp', '<cmd>TermSelect<cr>', { noremap = true, silent = false })
+      vim.api.nvim_set_keymap('n', 'nnn', '<cmd>TermNew { name = vim.fn.input("Name: ") }<cr>', { noremap = true, silent = false })
       vim.api.nvim_buf_set_keymap(0, 't', '<esc>', [[<C-\><C-n>]], opts)
       vim.api.nvim_buf_set_keymap(0, 't', 'jk', [[<C-\><C-n>]], opts)
       vim.api.nvim_buf_set_keymap(0, 't', '<C-h>', [[<C-\><C-n><C-W>h]], opts)
