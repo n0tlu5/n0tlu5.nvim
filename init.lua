@@ -237,6 +237,43 @@ if not (vim.uv or vim.loop).fs_stat(lazypath) then
 end ---@diagnostic disable-next-line: undefined-field
 vim.opt.rtp:prepend(lazypath)
 
+-- Custom function to split a string
+local function split_string(inputstr, sep)
+    if sep == nil then
+        sep = "%s"  -- default to whitespace
+    end
+
+    local t = {}
+    for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
+        table.insert(t, str)
+    end
+    return t
+end
+
+-- Function to load environment variables from .env file
+function LoadEnv()
+    local env_file = vim.fn.expand('~/.config/codecompanion.env')
+  
+    if vim.fn.filereadable(env_file) == 1 then
+        local lines = vim.fn.readfile(env_file)
+        for _, line in ipairs(lines) do
+            -- Ignore comments and empty lines
+            if line ~= '' and line:sub(1, 1) ~= '#' then
+                local kv = split_string(line, '=')  -- Use the new split function
+                if #kv == 2 then
+                    local key = kv[1]:match("^%s*(.-)%s*$")  -- Trim whitespace
+                    local value = kv[2]:match("^%s*(.-)%s*$")  -- Trim whitespace
+                    vim.fn.setenv(key, value)  -- Set the environment variable
+                end
+            end
+        end
+    else
+        print("Environment file not found.")
+    end
+end
+
+LoadEnv()  -- Load environment variables
+
 -- [[ Configure and install plugins ]]
 --
 --  To check the current status of your plugins, run
@@ -1019,7 +1056,7 @@ require('lazy').setup({
         },
       }
       vim.api.nvim_set_keymap('n', 'ppp', '<cmd>TermSelect<cr>', { noremap = true, silent = false })
-      vim.api.nvim_set_keymap('n', 'nnn', '<cmd>TermNew { name = vim.fn.input("Name: ") }<cr>', { noremap = true, silent = false })
+      vim.api.nvim_set_keymap('n', 'ooo', '<cmd>TermNew { name = vim.fn.input("Name: ") }<cr>', { noremap = true, silent = false })
       vim.api.nvim_buf_set_keymap(0, 't', '<esc>', [[<C-\><C-n>]], opts)
       vim.api.nvim_buf_set_keymap(0, 't', 'jk', [[<C-\><C-n>]], opts)
       vim.api.nvim_buf_set_keymap(0, 't', '<C-h>', [[<C-\><C-n><C-W>h]], opts)
@@ -1037,9 +1074,10 @@ require('lazy').setup({
     opts = {
       adapters = {
         gemini = function()
+          local api_key = os.getenv 'OPENAI_API_KEY' or 'default_value_if_not_set'
           return require('codecompanion.adapters').extend('gemini', {
             env = {
-              api_key = 'REDACTED',
+              api_key = api_key,
             },
           })
         end,
