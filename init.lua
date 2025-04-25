@@ -239,40 +239,40 @@ vim.opt.rtp:prepend(lazypath)
 
 -- Custom function to split a string
 local function split_string(inputstr, sep)
-    if sep == nil then
-        sep = "%s"  -- default to whitespace
-    end
+  if sep == nil then
+    sep = '%s' -- default to whitespace
+  end
 
-    local t = {}
-    for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
-        table.insert(t, str)
-    end
-    return t
+  local t = {}
+  for str in string.gmatch(inputstr, '([^' .. sep .. ']+)') do
+    table.insert(t, str)
+  end
+  return t
 end
 
 -- Function to load environment variables from .env file
 function LoadEnv()
-    local env_file = vim.fn.expand('~/.config/codecompanion.env')
-  
-    if vim.fn.filereadable(env_file) == 1 then
-        local lines = vim.fn.readfile(env_file)
-        for _, line in ipairs(lines) do
-            -- Ignore comments and empty lines
-            if line ~= '' and line:sub(1, 1) ~= '#' then
-                local kv = split_string(line, '=')  -- Use the new split function
-                if #kv == 2 then
-                    local key = kv[1]:match("^%s*(.-)%s*$")  -- Trim whitespace
-                    local value = kv[2]:match("^%s*(.-)%s*$")  -- Trim whitespace
-                    vim.fn.setenv(key, value)  -- Set the environment variable
-                end
-            end
+  local env_file = vim.fn.expand '~/.config/codecompanion.env'
+
+  if vim.fn.filereadable(env_file) == 1 then
+    local lines = vim.fn.readfile(env_file)
+    for _, line in ipairs(lines) do
+      -- Ignore comments and empty lines
+      if line ~= '' and line:sub(1, 1) ~= '#' then
+        local kv = split_string(line, '=') -- Use the new split function
+        if #kv == 2 then
+          local key = kv[1]:match '^%s*(.-)%s*$' -- Trim whitespace
+          local value = kv[2]:match '^%s*(.-)%s*$' -- Trim whitespace
+          vim.fn.setenv(key, value) -- Set the environment variable
         end
-    else
-        print("Environment file not found.")
+      end
     end
+  else
+    print 'Environment file not found.'
+  end
 end
 
-LoadEnv()  -- Load environment variables
+LoadEnv() -- Load environment variables
 
 -- [[ Configure and install plugins ]]
 --
@@ -724,6 +724,8 @@ require('lazy').setup({
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
       require('mason-lspconfig').setup {
+        ensure_installed = ensure_installed,
+        automatic_installation = true,
         handlers = {
           function(server_name)
             local server = servers[server_name] or {}
@@ -1055,8 +1057,8 @@ require('lazy').setup({
           },
         },
       }
-      vim.api.nvim_set_keymap('n', 'ppp', '<cmd>TermSelect<cr>', { noremap = true, silent = false })
-      vim.api.nvim_set_keymap('n', 'ooo', '<cmd>TermNew { name = vim.fn.input("Name: ") }<cr>', { noremap = true, silent = false })
+      vim.api.nvim_set_keymap('n', '<C-W>s', '<cmd>TermSelect<cr>', { noremap = true, silent = false })
+      vim.api.nvim_set_keymap('n', '<C-W>n', '<cmd>TermNew { name = vim.fn.input("Name: ") }<cr>', { noremap = true, silent = false })
       vim.api.nvim_buf_set_keymap(0, 't', '<esc>', [[<C-\><C-n>]], opts)
       vim.api.nvim_buf_set_keymap(0, 't', 'jk', [[<C-\><C-n>]], opts)
       vim.api.nvim_buf_set_keymap(0, 't', '<C-h>', [[<C-\><C-n><C-W>h]], opts)
